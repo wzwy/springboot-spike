@@ -125,8 +125,6 @@ pom文件
 			<artifactId>poi-ooxml</artifactId>
 			<version>3.15</version>
 		</dependency>
-
-
 	</dependencies>
 
     <build>
@@ -1220,5 +1218,10 @@ public class RedissonManager {
 
 
 notify-keyspace-events "Ex"
+
+------------------------
+https://github.com/battcn/spring-boot2-learning
+https://github.com/vector4wang/spring-boot-quick/tree/master/quick-rabbitmq
+https://github.com/vector4wang/spring-boot-quick
 
 
