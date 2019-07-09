@@ -593,19 +593,9 @@ public interface PoiServiceImpl {
 package com.wz.springboot.service;
 
 import com.wz.springboot.dao.PoiMapper;
-import com.wz.springboot.model.Teacher;
-import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.hssf.util.HSSFColor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PoiService implements PoiServiceImpl {
@@ -614,66 +604,12 @@ public class PoiService implements PoiServiceImpl {
     private PoiMapper poiMapper;
 
     @Override
-    public HSSFWorkbook excel(String lx) throws IOException {
-        Map<String, List<String>> map = new HashMap<>();
-        List<Teacher> list = poiMapper.getYhxx(lx);
-        System.out.println(list);
-        for (int i = 0; i < list.size(); i++) {
-            List<String> yhlist = new ArrayList<>();
-            yhlist.add(list.get(i).getXm());
-            yhlist.add(list.get(i).getNl());
-            map.put(list.get(i).getXm(), yhlist);
-        }
-        HSSFWorkbook hssfWorkbook = createExcel(map, excelTitle());
-        return hssfWorkbook;
-    }
-
-    public HSSFWorkbook createExcel(Map<String, List<String>> map, String[] strArray) throws IOException {
-        // 第一步，创建一个webbook，对应一个Excel文件
-        HSSFWorkbook wb = new HSSFWorkbook();
-        // 第二步，在webbook中添加一个sheet,对应Excel文件中的sheet
-        HSSFSheet sheet = wb.createSheet("王满宝");
-        sheet.setDefaultColumnWidth(20);// 默认列宽
-        // 第三步，在sheet中添加表头第0行,注意老版本poi对Excel的行数列数有限制short
-        HSSFRow row = sheet.createRow((int) 0);
-        // 第四步，创建单元格，并设置值表头 设置表头居中
-        HSSFCellStyle style = wb.createCellStyle();
-        // 创建一个居中格式
-        style.setAlignment(HSSFCellStyle.ALIGN_CENTER);
-        //设置背景颜色
-        style.setFillForegroundColor(HSSFColor.LIME.index);
-        //solid 填充  foreground  前景色
-        style.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        // 添加excel title
-        HSSFCell cell = null;
-        for (int i = 0; i < strArray.length; i++) {
-            cell = row.createCell((short) i);
-            cell.setCellValue(strArray[i]);
-            cell.setCellStyle(style);
-        }
-
-        // 第五步，写入实体数据 实际应用中这些数据从数据库得到,list中字符串的顺序必须和数组strArray中的顺序一致
-        int i = 0;
-        for (String str : map.keySet()) {
-            row = sheet.createRow((int) i + 1);
-            List<String> list = map.get(str);
-            //创建单元格，并设置值
-            for (int j = 0; j < strArray.length; j++) {
-                row.createCell((short) j).setCellValue(list.get(j));
-            }
-            FileOutputStream fileOutputStream = new FileOutputStream("D:/template/Members.xls");
-            wb.write(fileOutputStream);
-            fileOutputStream.close();
-            i++;
-        }
-        return wb;
-    }
-
-    public static String[] excelTitle() {
-        String[] strArray = {"姓名", "年龄" };
-        return strArray;
+    public List<Map<String,String>> excel(String lx) {
+        List<Map<String,String>> list = poiMapper.getYhxx(lx);
+        return list;
     }
 }
+
 
 
 package com.wz.springboot.service;
@@ -957,22 +893,16 @@ public class SpikeController {
         return lockTestService.limitedtimeSpike(commodity);
     }
 }
-
-
 package com.wz.springboot.controller;
 
 import com.wz.springboot.service.PoiService;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import com.wz.springboot.util.PoiUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URLEncoder;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/poi")
@@ -983,17 +913,12 @@ public class PoiController {
 
     //使用poi导出excel
     @GetMapping("/excel")
-    public void excel(@RequestParam String lx, HttpServletResponse response) throws IOException {
-        ResponseEntity<byte[]> responseEntity = null;
-        HSSFWorkbook hssfWorkbook = poiService.excel(lx);
-        OutputStream outputStream = response.getOutputStream();
-        hssfWorkbook.write(outputStream);
-        response.setContentType("application/vnd.ms-excel");
-        response.setHeader("Content-Disposition", "attachment;filename="+ URLEncoder.encode("wangmanbao.xls", "utf-8"));
-        outputStream.flush();
-        outputStream.close();
+    public void excel(@RequestParam String lx, HttpServletResponse response) {
+        List<Map<String,String>> list = poiService.excel(lx);
+        PoiUtil.excel(list,response);
     }
 }
+
 
 
 package com.wz.springboot.configure;
@@ -1213,6 +1138,91 @@ public class RedissonManager {
         redisson = Redisson.create(config);//生成RedissonClient客户端
         System.out.println(redisson.getConfig().toJSON().toString());
         return redisson;
+    }
+}
+
+
+package com.wz.springboot.util;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Slf4j
+public class PoiUtil {
+
+    public static HSSFWorkbook createExcel(List<Map<String,String>> list) {
+        // 创建一个webbook，对应一个Excel文件
+        HSSFWorkbook wb = new HSSFWorkbook();
+        // 在webbook中添加一个sheet,对应Excel文件中的sheet
+        HSSFSheet sheet = wb.createSheet("报表");
+        // 默认列宽
+        sheet.setDefaultColumnWidth(20);
+        // 在sheet中添加表头第0行
+        HSSFRow row = sheet.createRow(0);
+        // 创建单元格，并设置值表头 设置表头居中 背景颜色 前景颜色
+        HSSFCellStyle style = wb.createCellStyle();
+        // 创建一个居中格式
+        style.setAlignment(HorizontalAlignment.CENTER);
+        //设置背景颜色
+        style.setFillForegroundColor(HSSFColor.LIME.index);
+        //前景颜色
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        // 添加excel title
+        String[] strArray = excelTitle();
+        for (int i = 0; i < strArray.length; i++) {
+            HSSFCell cell = row.createCell(i);
+            cell.setCellValue(strArray[i]);
+            cell.setCellStyle(style);
+        }
+
+        //写入数据
+        for (int i = 0;i<list.size();i++) {
+            row = sheet.createRow(i + 1);//创建行
+            int j = 0;
+            //创建单元格，并设置值
+            for(Map.Entry entry : list.get(i).entrySet()){
+                HSSFCell hssfCell = row.createCell(j);
+                if(null!=entry.getValue()){
+                    hssfCell.setCellValue((String) entry.getValue());
+                }else{
+                    hssfCell.setCellValue("");
+                }
+                j++;
+            }
+        }
+        return wb;
+    }
+
+    public static String[] excelTitle() {
+        String[] strArray = {"姓名", "年龄" };
+        return strArray;
+    }
+
+    public static void excel(List<Map<String,String>> list,HttpServletResponse response){
+        try {
+            HSSFWorkbook hssfWorkbook = createExcel(list);
+            OutputStream outputStream = response.getOutputStream();
+            hssfWorkbook.write(response.getOutputStream());
+            response.setContentType("application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename="+ URLEncoder.encode(new SimpleDateFormat("yyyy-MM-dd").format(new Date())+"-"+ UUID.randomUUID().toString().replace("-","")+".xls", "utf-8"));
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 
