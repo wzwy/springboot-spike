@@ -245,7 +245,6 @@ Limitedtimespike.xml
 
 </mapper>
 
-Poi.xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.wz.springboot.dao.PoiMapper" >
@@ -259,11 +258,12 @@ Poi.xml
     <!--</resultMap>-->
 
     <!--获取用户信息-->
-    <select id="getYhxx" parameterType="java.lang.String" resultType="com.wz.springboot.model.Teacher" >
-        select t.xm,t.nl from teacher t where t.lx = #{lx}
+    <select id="getYhxx" parameterType="java.lang.String" resultType="java.util.Map" >
+        select t.xm,t.nl from teacher t where t.lx = #{lx} order by t.nl asc
     </select>
 
 </mapper>
+
 
 mybatis-config.xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -770,17 +770,17 @@ public class Commodity {
 
 package com.wz.springboot.dao;
 
-import com.wz.springboot.model.Teacher;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 @Repository
 public interface PoiMapper {
 
-    public List<Teacher> getYhxx(String lx);
+    public List<Map<String,String>> getYhxx(String lx);
 }
 
 
@@ -1225,6 +1225,136 @@ public class PoiUtil {
         }
     }
 }
+
+
+
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : test
+ Source Server Type    : MySQL
+ Source Server Version : 50519
+ Source Host           : localhost:3306
+ Source Schema         : seckill
+
+ Target Server Type    : MySQL
+ Target Server Version : 50519
+ File Encoding         : 65001
+
+ Date: 09/07/2019 16:14:12
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for commodity
+-- ----------------------------
+DROP TABLE IF EXISTS `commodity`;
+CREATE TABLE `commodity`  (
+  `id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键',
+  `spmc` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '商品名称',
+  `spjg` decimal(10, 2) DEFAULT NULL COMMENT '商品价格',
+  `spjs` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '商品介绍',
+  `spkc` int(30) DEFAULT NULL COMMENT '商品库存',
+  `sjsj` datetime DEFAULT NULL COMMENT '上架时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品表' ROW_FORMAT = Compact;
+
+-- ----------------------------
+-- Records of commodity
+-- ----------------------------
+INSERT INTO `commodity` VALUES ('6bd3daf99ef011e9ac724ccc6afb77c9', '泳衣', 510.01, '泳装是指在水中或海滩活动时和模特及选美时展示形体的专用服装。有一件式和两截式和三点式（比基尼）等变化。', 10, '2019-07-05 14:45:52');
+
+-- ----------------------------
+-- Table structure for limitedtimespike
+-- ----------------------------
+DROP TABLE IF EXISTS `limitedtimespike`;
+CREATE TABLE `limitedtimespike`  (
+  `id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键',
+  `spid` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '商品id',
+  `spmsjg` decimal(10, 2) DEFAULT NULL COMMENT '商品秒杀价格',
+  `mssj` datetime DEFAULT NULL COMMENT '秒杀时间',
+  `msfz` int(10) DEFAULT NULL COMMENT '秒杀分钟',
+  `lx` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '类型0未开始1已开始2已结束',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '限时秒杀表' ROW_FORMAT = Compact;
+
+-- ----------------------------
+-- Records of limitedtimespike
+-- ----------------------------
+INSERT INTO `limitedtimespike` VALUES ('61adce669efe11e9ac724ccc6afb77c9', '6bd3daf99ef011e9ac724ccc6afb77c9', 10.00, '2019-07-05 17:00:00', 10, '0');
+
+-- ----------------------------
+-- Table structure for order
+-- ----------------------------
+DROP TABLE IF EXISTS `order`;
+CREATE TABLE `order`  (
+  `id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键',
+  `spid` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '商品id',
+  `yhid` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '用户id',
+  `gmsj` datetime DEFAULT NULL COMMENT '购买时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '订单表' ROW_FORMAT = Compact;
+
+-- ----------------------------
+-- Records of order
+-- ----------------------------
+INSERT INTO `order` VALUES ('6bd3daf99ef011e9ac724ccc6afb77c9', '泳衣', NULL, '2019-07-05 14:45:52');
+
+-- ----------------------------
+-- Table structure for secondkillrecord
+-- ----------------------------
+DROP TABLE IF EXISTS `secondkillrecord`;
+CREATE TABLE `secondkillrecord`  (
+  `id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键',
+  `spid` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '商品id',
+  `spmsjg` decimal(10, 2) DEFAULT NULL COMMENT '商品秒杀价格',
+  `mssj` datetime DEFAULT NULL COMMENT '秒杀时间',
+  `msfz` int(10) DEFAULT NULL COMMENT '秒杀分钟',
+  `lx` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '类型1已开始2已结束',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '秒杀记录表' ROW_FORMAT = Compact;
+
+-- ----------------------------
+-- Table structure for teacher
+-- ----------------------------
+DROP TABLE IF EXISTS `teacher`;
+CREATE TABLE `teacher`  (
+  `id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键',
+  `xm` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '姓名',
+  `nl` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '年龄',
+  `lx` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '类型',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '导出表' ROW_FORMAT = Compact;
+
+-- ----------------------------
+-- Records of teacher
+-- ----------------------------
+INSERT INTO `teacher` VALUES ('01b3d8c2a15f11e9ac724ccc6afb77c9', '王满宝', '20', '1');
+INSERT INTO `teacher` VALUES ('05f8d971a15f11e9ac724ccc6afb77c9', '王芬芬', '19', '1');
+INSERT INTO `teacher` VALUES ('09b74c25a15f11e9ac724ccc6afb77c9', '王二芬', '18', '1');
+INSERT INTO `teacher` VALUES ('0d29b84ca15f11e9ac724ccc6afb77c8', '王佳敏', '16', '1');
+INSERT INTO `teacher` VALUES ('0d29b84ca15f11e9ac724ccc6afb77c9', '王嫂嫂', '17', '0');
+
+-- ----------------------------
+-- Table structure for user
+-- ----------------------------
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user`  (
+  `id` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '主键',
+  `yhmc` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '用户名称',
+  `yhmm` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '用户密码',
+  `zcsj` datetime DEFAULT NULL COMMENT '注册时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户表' ROW_FORMAT = Compact;
+
+-- ----------------------------
+-- Records of user
+-- ----------------------------
+INSERT INTO `user` VALUES ('6bd3daf99ef011e9ac724ccc6afb77c9', 'wmb', '123456', '2019-07-05 14:45:52');
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 
 notify-keyspace-events "Ex"
