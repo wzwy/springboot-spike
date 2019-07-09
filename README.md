@@ -910,14 +910,17 @@ public class PoiController {
 
     @Autowired
     private PoiService poiService;
+    @Autowired
+    private PoiUtil poiUtil;
 
     //使用poi导出excel
     @GetMapping("/excel")
     public void excel(@RequestParam String lx, HttpServletResponse response) {
         List<Map<String,String>> list = poiService.excel(lx);
-        PoiUtil.excel(list,response);
+        poiUtil.excel(list,response);
     }
 }
+
 
 
 
@@ -1149,6 +1152,7 @@ import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -1161,9 +1165,10 @@ import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
+@Component
 public class PoiUtil {
 
-    public static HSSFWorkbook createExcel(List<Map<String,String>> list) {
+    public HSSFWorkbook createExcel(List<Map<String,String>> list) {
         // 创建一个webbook，对应一个Excel文件
         HSSFWorkbook wb = new HSSFWorkbook();
         // 在webbook中添加一个sheet,对应Excel文件中的sheet
@@ -1206,12 +1211,12 @@ public class PoiUtil {
         return wb;
     }
 
-    public static String[] excelTitle() {
+    public String[] excelTitle() {
         String[] strArray = {"姓名", "年龄" };
         return strArray;
     }
 
-    public static void excel(List<Map<String,String>> list,HttpServletResponse response){
+    public void excel(List<Map<String,String>> list,HttpServletResponse response){
         try {
             HSSFWorkbook hssfWorkbook = createExcel(list);
             OutputStream outputStream = response.getOutputStream();
@@ -1225,6 +1230,7 @@ public class PoiUtil {
         }
     }
 }
+
 
 
 package com.wz.springboot.util;
