@@ -1227,6 +1227,20 @@ public class PoiUtil {
 }
 
 
+package com.wz.springboot.util;
+
+//常量
+public class Constant {
+
+    public static final String SPIKE = "SPIKE_";//秒杀标识
+    public static final String COMMODITY = "COMMODITY_";//商品
+    public static final String INCREASE = "INCREASE_";//自增库存
+    public static final String ORDER = "ORDER_";//订单
+    public static final String LOCK = "LOCK_";//锁
+    public static final String AUTOMATICRECEIVING = "AUTOMATICRECEIVING_";//自动收货
+
+}
+
 
 /*
  Navicat Premium Data Transfer
