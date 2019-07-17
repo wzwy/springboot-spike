@@ -1384,3 +1384,30 @@ https://github.com/vector4wang/spring-boot-quick/tree/master/quick-rabbitmq
 https://github.com/vector4wang/spring-boot-quick
 
 
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8"></meta>
+    <title>登录</title>
+</head>
+<script>
+    function exportData(){
+        document.getElementById("myform").setAttribute("action", "http://172.16.70.88:8080/poi/excel");//url提交的路径
+        document.getElementById("myform").submit();
+    }
+
+</script>
+<body>
+<form id="myform" action="" method="get">
+    <table>
+        <tr>
+            <td>Name:</td>
+            <td><input type="text" name="lx"/></td>
+        </tr>
+        <tr>
+            <td><button type="button" onclick="exportData()">Submit</button></td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
